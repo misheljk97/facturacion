@@ -59,38 +59,20 @@ Administración de Categorías
         </div>
     </div>
 </div>
+<?= $this->endSection() ?>
 
-<!-- Estilos y Scripts -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<?= $this->section('scripts') ?>
 <script>
 let tablaCategorias;
 const baseUrl = "<?= base_url() ?>";
 
-// Configuración reutilizable de Toast según buenas prácticas
-const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer);
-        toast.addEventListener('mouseleave', Swal.resumeTimer);
-    }
-});
-
 $(document).ready(function() {
-    // Inicialización de DataTable
+    // Inicialización de DataTable (aprovecha la configuración de idioma predeterminada global)
     tablaCategorias = $('#tablaCategorias').DataTable({
         "ajax": {
             "url": baseUrl + "categorias/listar",
             "type": "GET",
-            "dataSrc": "data" // Ajusta esto según el formato JSON retornado por tu controlador
+            "dataSrc": "data"
         },
         "columns": [
             { "data": "id_categoria" },
@@ -110,68 +92,53 @@ $(document).ready(function() {
                     `;
                 }
             }
-        ],
-        "language": {
-            "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-        },
-        "responsive": true
+        ]
     });
 
-    // Envío de Formulario
+    // Guardar / Actualizar
     $('#formCategoria').on('submit', function(e) {
         e.preventDefault();
-        limpiarErrores();
+        const $form = $(this);
+        limpiarErroresFormulario($form);
 
         $.ajax({
             url: baseUrl + "categorias/guardar",
             type: "POST",
-            data: $(this).serialize(),
+            data: $form.serialize(),
             dataType: "json",
             success: function(response) {
                 if (response.status === 'success') {
                     $('#modalCategoria').modal('hide');
                     tablaCategorias.ajax.reload(null, false);
-                    
-                    // Notificación tipo Toast para operaciones exitosas rápidas
-                    Toast.fire({
-                        icon: 'success',
-                        title: response.message || 'Categoría guardada correctamente'
-                    });
+                    mostrarToast('success', response.message || 'Categoría guardada correctamente');
                 } else {
-                    if (response.errors && response.errors.nombre) {
-                        $('#nombre').addClass('is-invalid');
-                        $('#error-nombre').text(response.errors.nombre);
+                    if (response.errors) {
+                        mostrarErroresFormulario($form, response.errors);
                     } else if (response.message) {
-                        // Modal informativo para errores de validación de negocio
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Atención',
-                            text: response.message
-                        });
+                        Swal.fire('Atención', response.message, 'warning');
                     }
                 }
             },
             error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de servidor',
-                    text: 'Ocurrió un problema procesando la solicitud. Intente de nuevo.'
-                });
+                Swal.fire('Error', 'Ocurrió un problema en la solicitud.', 'error');
             }
         });
     });
 });
 
 function abrirModal() {
-    $('#formCategoria')[0].reset();
+    const $form = $('#formCategoria');
+    $form[0].reset();
     $('#id_categoria').val('');
-    limpiarErrores();
+    limpiarErroresFormulario($form);
     $('#modalCategoriaLabel').text('Nueva Categoría');
     $('#modalCategoria').modal('show');
 }
 
 function editarCategoria(id) {
-    limpiarErrores();
+    const $form = $('#formCategoria');
+    limpiarErroresFormulario($form);
+
     $.get(baseUrl + "categorias/obtener/" + id)
         .done(function(response) {
             if (response.status === 'success') {
@@ -180,55 +147,20 @@ function editarCategoria(id) {
                 $('#modalCategoriaLabel').text('Editar Categoría');
                 $('#modalCategoria').modal('show');
             } else {
-                Toast.fire({
-                    icon: 'error',
-                    title: response.message || 'No se pudieron obtener los datos'
-                });
+                mostrarToast('error', response.message || 'Error al obtener datos');
             }
         })
         .fail(function() {
-            Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+            Swal.fire('Error', 'No se pudo comunicar con el servidor.', 'error');
         });
 }
 
 function eliminarCategoria(id) {
-    // Uso de Swal.fire para diálogo de confirmación obligatoria
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Esta acción eliminará el registro de forma permanente.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.get(baseUrl + "categorias/eliminar/" + id)
-                .done(function(response) {
-                    if (response.status === 'success') {
-                        tablaCategorias.ajax.reload(null, false);
-                        
-                        // Confirmación vía Toast tras la eliminación
-                        Toast.fire({
-                            icon: 'success',
-                            title: response.message || 'Categoría eliminada'
-                        });
-                    } else {
-                        Swal.fire('Error', response.message || 'No se pudo eliminar el registro', 'error');
-                    }
-                })
-                .fail(function() {
-                    Swal.fire('Error', 'Ocurrió un error en el servidor', 'error');
-                });
-        }
+    // Llamada al helper global reutilizable
+    confirmarEliminacion({
+        url: baseUrl + "categorias/eliminar/" + id,
+        datatable: tablaCategorias
     });
-}
-
-function limpiarErrores() {
-    $('#nombre').removeClass('is-invalid');
-    $('#error-nombre').text('');
 }
 </script>
 <?= $this->endSection() ?>
