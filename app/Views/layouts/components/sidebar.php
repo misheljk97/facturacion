@@ -67,6 +67,13 @@
                         <p>Proveedores</p>
                         </a>
                         </li>
+                        <!-- Opción Usuarios -->
+                        <li class="nav-item">
+                        <a href="<?= base_url('usuarios') ?>" class="nav-link <?= url_is('usuarios*') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-person-gear"></i>
+                        <p>Usuarios</p>
+                        </a>
+                        </li>
                     </ul>
                 </li>
 
