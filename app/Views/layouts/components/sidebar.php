@@ -47,6 +47,12 @@
                              <p>Categorías</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                        <a href="<?= base_url('marcas') ?>" class="nav-link <?= url_is('marcas*') ? 'active' : '' ?>">
+                         <i class="nav-icon bi bi-bookmark-star"></i>
+                        <p>Marcas</p>
+                        </a>
+                        </li>
                     </ul>
                 </li>
 

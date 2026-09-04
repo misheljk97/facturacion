@@ -24,4 +24,19 @@ $routes->group('categorias', ['filter' => ['auth', 'ajax']], function($routes) {
     $routes->post('guardar', 'CategoriasController::guardar');
     $routes->get('obtener/(:num)', 'CategoriasController::obtener/$1');
     $routes->get('eliminar/(:num)', 'CategoriasController::eliminar/$1');
+});  
+
+    // Vista principal del módulo marcas (dentro del grupo con filtro 'auth')
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // ... rutas existentes
+    $routes->get('marcas', 'MarcasController::index');
+});
+
+// Endpoints AJAX (dentro del grupo con filtros 'auth' y 'ajax')
+$routes->group('marcas', ['filter' => ['auth', 'ajax']], function($routes) {
+    $routes->get('listar', 'MarcasController::listar');
+    $routes->post('guardar', 'MarcasController::guardar');
+    $routes->get('obtener/(:num)', 'MarcasController::obtener/$1');
+    $routes->get('eliminar/(:num)', 'MarcasController::eliminar/$1');
+
 });
