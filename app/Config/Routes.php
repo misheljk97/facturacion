@@ -54,3 +54,16 @@ $routes->group('clientes', ['filter' => ['auth', 'ajax']], function($routes) {
     $routes->get('obtener/(:num)', 'ClientesController::obtener/$1');
     $routes->get('eliminar/(:num)', 'ClientesController::eliminar/$1');
 });
+// Vista principal del módulo proveedores (dentro del grupo con filtro 'auth')
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // ... rutas existentes
+    $routes->get('proveedores', 'ProveedoresController::index');
+});
+
+// Endpoints AJAX (dentro del grupo con filtros 'auth' y 'ajax')
+$routes->group('proveedores', ['filter' => ['auth', 'ajax']], function($routes) {
+    $routes->get('listar', 'ProveedoresController::listar');
+    $routes->post('guardar', 'ProveedoresController::guardar');
+    $routes->get('obtener/(:num)', 'ProveedoresController::obtener/$1');
+    $routes->get('eliminar/(:num)', 'ProveedoresController::eliminar/$1');
+});
