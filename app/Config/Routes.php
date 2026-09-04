@@ -40,3 +40,17 @@ $routes->group('marcas', ['filter' => ['auth', 'ajax']], function($routes) {
     $routes->get('eliminar/(:num)', 'MarcasController::eliminar/$1');
 
 });
+
+// Vista principal del módulo clientes (dentro del grupo con filtro 'auth')
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // ... rutas existentes
+    $routes->get('clientes', 'ClientesController::index');
+});
+
+// Endpoints AJAX (dentro del grupo con filtros 'auth' y 'ajax')
+$routes->group('clientes', ['filter' => ['auth', 'ajax']], function($routes) {
+    $routes->get('listar', 'ClientesController::listar');
+    $routes->post('guardar', 'ClientesController::guardar');
+    $routes->get('obtener/(:num)', 'ClientesController::obtener/$1');
+    $routes->get('eliminar/(:num)', 'ClientesController::eliminar/$1');
+});

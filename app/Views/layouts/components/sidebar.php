@@ -53,6 +53,13 @@
                         <p>Marcas</p>
                         </a>
                         </li>
+                        <!-- Opción Clientes -->
+                        <li class="nav-item">
+                        <a href="<?= base_url('clientes') ?>" class="nav-link <?= url_is('clientes*') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-people"></i>
+                        <p>Clientes</p>
+                        </a>
+                        </li>
                     </ul>
                 </li>
 
