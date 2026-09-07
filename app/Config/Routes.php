@@ -81,3 +81,16 @@ $routes->group('usuarios', ['filter' => ['auth', 'ajax']], function($routes) {
     $routes->get('obtener/(:num)', 'UsuariosController::obtener/$1');
     $routes->get('eliminar/(:num)', 'UsuariosController::eliminar/$1');
 });
+// Vista principal del módulo productos (dentro del grupo con filtro 'auth')
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // ... rutas existentes
+    $routes->get('productos', 'ProductosController::index');
+});
+
+// Endpoints AJAX (dentro del grupo con filtros 'auth' y 'ajax')
+$routes->group('productos', ['filter' => ['auth', 'ajax']], function($routes) {
+    $routes->get('listar', 'ProductosController::listar');
+    $routes->post('guardar', 'ProductosController::guardar');
+    $routes->get('obtener/(:num)', 'ProductosController::obtener/$1');
+    $routes->get('eliminar/(:num)', 'ProductosController::eliminar/$1');
+});
