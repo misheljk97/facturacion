@@ -25,6 +25,7 @@
                             <th scope="col">Cliente</th>
                             <th scope="col">Total</th>
                             <th scope="col">Fecha</th>
+                            <th scope="col" class="text-center" style="width: 120px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,11 +36,16 @@
                                     <td><?= esc($v['cliente']) ?></td>
                                     <td class="text-success fw-bold">$<?= number_format($v['total'], 2) ?></td>
                                     <td><?= date('d/m/Y H:i', strtotime($v['fecha'])) ?></td>
+                                    <td class="text-center">
+                                        <a href="<?= base_url('facturas/imprimir/' . $v['id_venta']) ?>" target="_blank" class="btn btn-danger btn-sm fw-bold">
+                                            <i class="fas fa-file-pdf me-1"></i> PDF
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No hay facturas registradas.</td>
+                                <td colspan="5" class="text-center text-muted py-4">No hay facturas registradas.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

@@ -29,6 +29,37 @@ class FacturasController extends BaseController
         return view('facturacion/historial', $data);
     }
 
+    // Carga la vista de impresión / guardado en PDF de la factura
+    public function imprimir($id)
+    {
+        $db = \Config\Database::connect();
+
+        // Consulta de la venta con los datos del cliente
+        $factura = $db->table('venta v')
+            ->select('v.*, c.nombre as cliente_nombre, c.identificacion')
+            ->join('cliente c', 'c.id_cliente = v.id_cliente')
+            ->where('v.id_venta', $id)
+            ->get()->getRowArray();
+
+        if (!$factura) {
+            return redirect()->to(base_url('facturas/historial'))->with('error', 'Factura no encontrada.');
+        }
+
+        // Consulta del detalle de la venta
+        $detalles = $db->table('detalle_venta dv')
+            ->select('dv.*, p.nombre as producto_nombre')
+            ->join('producto p', 'p.id_producto = dv.id_producto')
+            ->where('dv.id_venta', $id)
+            ->get()->getResultArray();
+
+        $data = [
+            'factura'  => $factura,
+            'detalles' => $detalles
+        ];
+
+        return view('facturacion/imprimir', $data);
+    }
+
     // Buscar clientes por coincidencia de nombre o identificación
     public function buscarClientes()
     {
@@ -122,8 +153,8 @@ class FacturasController extends BaseController
             }
 
             return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Factura registrada con éxito.',
+                'success'  => true,
+                'message'  => 'Factura registrada con éxito.',
                 'id_venta' => $idVenta
             ]);
 

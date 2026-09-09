@@ -110,3 +110,4 @@ $routes->get('compras', 'ComprasController::index');
 $routes->post('compras/guardar', 'ComprasController::guardar');
 
 $routes->get('compras/historial', 'ComprasController::historial');
+$routes->get('facturas/imprimir/(:num)', 'FacturasController::imprimir/$1');
