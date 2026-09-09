@@ -20,6 +20,19 @@ class ComprasController extends BaseController
         return view('compras/index', $data);
     }
 
+    // Método para buscar proveedores vía AJAX en el input con autocompletado
+    public function buscarProveedores()
+    {
+        $term = $this->request->getGet('q');
+        $proveedorModel = new ProveedorModel();
+
+        $proveedores = $proveedorModel->like('nombre', $term)
+                                      ->orLike('identificacion', $term)
+                                      ->findAll(10);
+
+        return $this->response->setJSON($proveedores);
+    }
+
     public function historial()
     {
         $db = \Config\Database::connect();

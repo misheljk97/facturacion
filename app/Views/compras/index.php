@@ -31,20 +31,19 @@
     <form action="<?= base_url('compras/guardar') ?>" method="POST" id="form-compra">
         <?= csrf_field() ?>
         <div class="row">
-            <!-- Columna Izquierda: Selección de Proveedor y Formulario de Producto -->
+            <!-- Columna Izquierda: Búsqueda de Proveedor y Formulario de Producto -->
             <div class="col-lg-4">
-                <!-- 1. Selección de Proveedor -->
+                <!-- 1. Buscador de Proveedor por AJAX -->
                 <div class="card shadow-sm border-0 mb-3">
                     <div class="card-header bg-primary text-white fw-bold">
                         1. Proveedor
                     </div>
-                    <div class="card-body">
-                        <select name="id_proveedor" id="id_proveedor" class="form-select" required>
-                            <option value="">-- Seleccione Proveedor --</option>
-                            <?php foreach ($proveedores as $prov): ?>
-                                <option value="<?= $prov['id_proveedor'] ?>"><?= esc($prov['nombre']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="card-body position-relative">
+                        <input type="text" id="buscar_proveedor" class="form-control" placeholder="Buscar por Nombre o Identificación..." autocomplete="off" required>
+                        <input type="hidden" name="id_proveedor" id="id_proveedor" required>
+                        
+                        <!-- Lista desplegable flotante de resultados -->
+                        <ul id="lista_proveedores" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; left: 0; top: 100%;"></ul>
                     </div>
                 </div>
 
@@ -124,9 +123,61 @@
     </form>
 </div>
 
-<!-- Script interactivo para manejar la tabla dinamica de productos -->
+<!-- Script interactivo para el buscador AJAX y la tabla dinámica de productos -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // --- LÓGICA BÚSQUEDA DE PROVEEDORES (AJAX) ---
+    const inputProveedor = document.getElementById('buscar_proveedor');
+    const inputIdProveedor = document.getElementById('id_proveedor');
+    const listaProveedores = document.getElementById('lista_proveedores');
+
+    inputProveedor.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        // Limpiar el ID oculto si el usuario modifica el texto
+        inputIdProveedor.value = '';
+
+        if (query.length < 2) {
+            listaProveedores.classList.add('d-none');
+            return;
+        }
+
+        fetch(`<?= base_url('compras/buscarProveedores') ?>?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                listaProveedores.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(p => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action cursor-pointer';
+                        li.style.cursor = 'pointer';
+                        
+                        const iden = p.identificacion ?? p.ruc ?? 'S/I';
+                        li.textContent = `${p.nombre} (${iden})`;
+                        
+                        li.onclick = function() {
+                            inputProveedor.value = p.nombre;
+                            inputIdProveedor.value = p.id_proveedor;
+                            listaProveedores.classList.add('d-none');
+                        };
+                        listaProveedores.appendChild(li);
+                    });
+                    listaProveedores.classList.remove('d-none');
+                } else {
+                    listaProveedores.classList.add('d-none');
+                }
+            })
+            .catch(err => console.error('Error al buscar proveedores:', err));
+    });
+
+    // Ocultar la lista si se hace clic fuera
+    document.addEventListener('click', function(e) {
+        if (!inputProveedor.contains(e.target) && !listaProveedores.contains(e.target)) {
+            listaProveedores.classList.add('d-none');
+        }
+    });
+
+    // --- LÓGICA TABLA DINÁMICA DE PRODUCTOS ---
     let itemIndex = 0;
 
     document.getElementById('btn_agregar').addEventListener('click', function () {
@@ -136,8 +187,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const cantidad = parseInt(document.getElementById('input_cantidad').value) || 0;
         const costo = parseFloat(document.getElementById('input_costo').value) || 0;
 
+        // ALERTA REEMPLAZADA CON SWEETALERT2
         if (!prodId || cantidad <= 0 || costo <= 0) {
-            alert('Por favor complete todos los campos correctamente.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos incompletos',
+                text: 'Por favor seleccione un producto, cantidad y costo válidos.',
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -199,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('input_total_compra').value = total.toFixed(2);
 
         const tbody = document.querySelector('#tabla_detalles tbody');
-        if (tbody.children.length === 0) {
+        if (tbody.querySelectorAll('.item-row').length === 0) {
             tbody.innerHTML = `
                 <tr id="row_empty">
                     <td colspan="5" class="text-center text-muted py-4">
@@ -209,6 +267,34 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         }
     }
+
+    // --- VALIDACIÓN ANTES DE ENVIAR EL FORMULARIO ---
+    document.getElementById('form-compra').addEventListener('submit', function (e) {
+        const idProveedor = document.getElementById('id_proveedor').value;
+        const items = document.querySelectorAll('.item-row');
+
+        if (!idProveedor) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Proveedor no seleccionado',
+                text: 'Por favor busque y seleccione un proveedor válido de la lista.',
+                confirmButtonColor: '#0d6efd'
+            });
+            return;
+        }
+
+        if (items.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Lista vacía',
+                text: 'Debe añadir al menos un producto antes de registrar el ingreso.',
+                confirmButtonColor: '#0d6efd'
+            });
+            return;
+        }
+    });
 });
 </script>
 <?= $this->endSection() ?>

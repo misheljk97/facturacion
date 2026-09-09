@@ -2,7 +2,11 @@
 <html lang="es">
 
 <!-- Cargar Head -->
-<?= $this->include('layouts/components/head') ?>
+<head>
+    <?= $this->include('layouts/components/head') ?>
+    <!-- SweetAlert2 CSS & JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">

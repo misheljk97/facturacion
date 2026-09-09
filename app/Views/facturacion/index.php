@@ -156,7 +156,12 @@ function agregarProducto(p) {
     const existe = detalles.find(item => item.id_producto == p.id_producto);
     if (existe) {
         if (existe.cantidad + 1 > p.stock) {
-            alert('No hay suficiente stock disponible.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stock insuficiente',
+                text: 'No hay suficiente stock disponible para este producto.',
+                confirmButtonColor: '#0d6efd'
+            });
             return;
         }
         existe.cantidad += 1;
@@ -179,7 +184,12 @@ function cambiarCantidad(idProducto, nuevaCantidad) {
     if (item) {
         const cant = parseInt(nuevaCantidad) || 1;
         if (cant > item.stock_max) {
-            alert(`Stock máximo disponible: ${item.stock_max}`);
+            Swal.fire({
+                icon: 'warning',
+                title: 'Límite de stock',
+                text: `Stock máximo disponible: ${item.stock_max}`,
+                confirmButtonColor: '#0d6efd'
+            });
             renderTabla();
             return;
         }
@@ -229,11 +239,21 @@ function renderTabla() {
 async function guardarFactura() {
     const idCliente = document.getElementById('id_cliente').value;
     if (!idCliente) {
-        alert('Debe seleccionar un cliente.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cliente no seleccionado',
+            text: 'Debe buscar y seleccionar un cliente antes de procesar.',
+            confirmButtonColor: '#0d6efd'
+        });
         return;
     }
     if (detalles.length === 0) {
-        alert('Debe agregar al menos un producto.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lista vacía',
+            text: 'Debe agregar al menos un producto a la factura.',
+            confirmButtonColor: '#0d6efd'
+        });
         return;
     }
 
@@ -246,21 +266,42 @@ async function guardarFactura() {
         detalles: detalles
     };
 
-    const res = await fetch('<?= base_url('facturas/guardar') ?>', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify(payload)
-    });
+    try {
+        const res = await fetch('<?= base_url('facturas/guardar') ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        });
 
-    const result = await res.json();
-    if (result.success) {
-        alert(result.message);
-        window.location.reload();
-    } else {
-        alert('Error: ' + result.message);
+        const result = await res.json();
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: result.message || 'Factura registrada con éxito.',
+                confirmButtonColor: '#198754',
+                confirmButtonText: 'Aceptar'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al registrar',
+                text: result.message || 'No se pudo guardar la factura.',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de servidor',
+            text: 'Ocurrió un error inesperado al procesar la solicitud.',
+            confirmButtonColor: '#dc3545'
+        });
     }
 }
 </script>
