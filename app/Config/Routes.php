@@ -103,3 +103,10 @@ $routes->group('facturas', ['filter' => 'auth'], function($routes) {
     $routes->get('buscarProductos', 'FacturasController::buscarProductos');
     $routes->post('guardar', 'FacturasController::guardar');
 });
+
+$routes->get('home/getDataGraficos', 'Home::getDataGraficos');
+
+$routes->get('compras', 'ComprasController::index');
+$routes->post('compras/guardar', 'ComprasController::guardar');
+
+$routes->get('compras/historial', 'ComprasController::historial');

@@ -90,6 +90,31 @@
                     </a>
                 </li>
 
+                <!-- Módulo Desplegable: Compras -->
+                <li class="nav-item <?= url_is('compras*') ? 'menu-open' : '' ?>">
+                    <a href="#" class="nav-link <?= url_is('compras*') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-cart-check"></i>
+                        <p>
+                            Compras
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="<?= base_url('compras') ?>" class="nav-link <?= url_is('compras') ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Nuevo Ingreso</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="<?= base_url('compras/historial') ?>" class="nav-link <?= url_is('compras/historial') ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Historial de Compras</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </nav>
     </div>
